@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Projets{% endblock %}
+{% block content %}
+<div class="stats-bar">
+  <div class="stat-card"><div class="val" style="color:var(--text)">{{ stats.total }}</div><div class="lbl">Total</div></div>
+  <div class="stat-card"><div class="val" style="color:var(--danger)">{{ stats.alertes }}</div><div class="lbl">🔴 Alertes</div></div>
+  <div class="stat-card"><div class="val" style="color:var(--warning)">{{ stats.attention }}</div><div class="lbl">🟡 Attention</div></div>
+  <div class="stat-card"><div class="val" style="color:var(--success)">{{ stats.ok }}</div><div class="lbl">🟢 OK</div></div>
+  <div class="stat-card"><div class="val" style="color:var(--text-dim)">{{ stats.sans_date }}</div><div class="lbl">⬜ Sans date</div></div>
+  <div class="stat-card"><div class="val" style="color:var(--accent)">{{ stats.total_alertes_envoyees }}</div><div class="lbl">📧 Emails</div></div>
+</div>
+<main>
+  <div class="toolbar">
+    <a href="{{ url_for('nouveau_projet') }}" class="btn btn-primary">➕ Nouveau projet</a>
+    <form method="get" style="display:flex;gap:8px;flex:1;align-items:center">
+      <div class="search-box">
+        <span>🔍</span>
+        <input name="search" value="{{ search }}" placeholder="Rechercher promoteur, intitulé...">
+      </div>
+      <input type="hidden" name="filtre" value="{{ filtre }}">
+      <button class="btn btn-dim btn-sm" type="submit">Chercher</button>
+    </form>
+    <div class="filter-tabs">
+      <a href="?filtre=tous&search={{ search }}"      class="filter-tab {{ 'active' if filtre=='tous' }}">Tous</a>
+      <a href="?filtre=alerte&search={{ search }}"    class="filter-tab {{ 'active' if filtre=='alerte' }}">🔴 Alerte</a>
+      <a href="?filtre=ok&search={{ search }}"        class="filter-tab {{ 'active' if filtre=='ok' }}">🟢 OK</a>
+      <a href="?filtre=sans_date&search={{ search }}" class="filter-tab {{ 'active' if filtre=='sans_date' }}">⬜ Sans date</a>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>PROMOTEUR</th>
+          <th>INTITULÉ DU PROJET</th>
+          <th>DATE DE PASSAGE</th>
+          <th>JOURS</th>
+          <th>STATUT</th>
+          <th>ALERTES</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projets %}
+        <tr class="row-{{ p.statut }}">
+          <td style="color:var(--text-dim);font-size:11px">{{ p.id }}</td>
+          <td style="font-weight:600">{{ p.promoteur }}</td>
+          <td style="color:var(--text-dim);max-width:320px">
+            <span title="{{ p.intitule }}">
+              {{ p.intitule[:80] }}{% if p.intitule|length > 80 %}...{% endif %}
+            </span>
+          </td>
+          <td style="white-space:nowrap">
+            {% if p.date_passage %}
+              {{ p.date_passage[8:10] }}/{{ p.date_passage[5:7] }}/{{ p.date_passage[:4] }}
+            {% else %}
+              <span style="color:var(--text-dim)">—</span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;font-weight:700;
+            color:{% if p.statut=='alerte' %}var(--danger){% elif p.statut=='warning' %}var(--warning){% elif p.statut=='ok' %}var(--success){% else %}var(--text-dim){% endif %}">
+            {% if p.jours is not none %}{{ p.jours }} j{% else %}—{% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ p.statut }}">
+              {% if p.statut=='alerte' %}🔴 ALERTE
+              {% elif p.statut=='warning' %}🟡 ATTENTION
+              {% elif p.statut=='ok' %}🟢 OK
+              {% else %}⬜ Sans date{% endif %}
+            </span>
+          </td>
+          <td style="text-align:center;color:var(--accent)">{{ p.nb_alertes or 0 }}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <a href="{{ url_for('modifier_projet', pid=p.id) }}" class="btn btn-warning btn-sm">✏️</a>
+              <form method="post" action="{{ url_for('supprimer_projet', pid=p.id) }}"
+                    onsubmit="return confirm('Supprimer ce projet ?')">
+                <button class="btn btn-danger btn-sm" type="submit">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim)">
+          Aucun projet trouvé.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:var(--text-dim)">
+    {{ projets|length }} projet(s) affiché(s)
+  </div>
+</main>
+{% endblock %}

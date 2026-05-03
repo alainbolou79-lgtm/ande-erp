@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if projet else 'Nouveau' }} Projet{% endblock %}
+{% block content %}
+<main>
+  <div class="card" style="max-width:700px;margin:0 auto">
+    <div class="card-title">
+      {{ '✏️ MODIFIER LE PROJET' if projet else '➕ NOUVEAU PROJET' }}
+    </div>
+
+    <form method="post">
+      <div class="form-group">
+        <label>PROMOTEUR *</label>
+        <input type="text" name="promoteur" required
+               value="{{ data.get('promoteur','') }}"
+               placeholder="Nom du promoteur">
+      </div>
+
+      <div class="form-group">
+        <label>INTITULÉ DU PROJET *</label>
+        <textarea name="intitule" required
+                  placeholder="Description complète du projet">{{ data.get('intitule','') }}</textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>DATE DE PASSAGE (AAAA-MM-JJ)</label>
+          <input type="date" name="date_passage"
+                 value="{{ data.get('date_passage','') }}"
+                 placeholder="2024-11-15">
+        </div>
+        <div class="form-group">
+          <label>NOTES</label>
+          <input type="text" name="notes"
+                 value="{{ data.get('notes','') }}"
+                 placeholder="Remarques optionnelles">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        <a href="{{ url_for('projets') }}" class="btn btn-dim">Annuler</a>
+      </div>
+    </form>
+  </div>
+</main>
+{% endblock %}

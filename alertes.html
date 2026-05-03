@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Alertes Actives{% endblock %}
+{% block content %}
+<main>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <h2 style="font-size:16px;font-weight:700;color:var(--danger)">
+        ⚠️ {{ alertes|length }} projet(s) hors délais (> {{ seuil }} jours)
+      </h2>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">
+        Les emails d'alerte sont envoyés automatiquement toutes les 60 minutes.
+      </p>
+    </div>
+    <form method="post" action="{{ url_for('envoyer_alertes') }}">
+      <button type="submit" class="btn btn-orange">
+        📧 Envoyer les alertes maintenant
+      </button>
+    </form>
+  </div>
+
+  {% if alertes %}
+    {% for p in alertes %}
+    <div class="alert-card">
+      <div style="flex:1">
+        <div class="ac-title">
+          {{ p.promoteur }}
+          <span style="color:var(--danger);font-weight:700"> – {{ p.intitule[:80] }}{% if p.intitule|length>80 %}...{% endif %} est hors délais</span>
+        </div>
+        <div class="ac-sub" style="margin-top:6px;display:flex;gap:20px;flex-wrap:wrap">
+          <span>📅 Date de passage :
+            <strong style="color:var(--text)">
+              {% if p.date_passage %}
+                {{ p.date_passage[8:10] }}/{{ p.date_passage[5:7] }}/{{ p.date_passage[:4] }}
+              {% else %}—{% endif %}
+            </strong>
+          </span>
+          <span>📧 Alertes envoyées : <strong style="color:var(--accent)">{{ p.nb_alertes or 0 }}</strong></span>
+          {% if p.derniere_alerte %}
+          <span>🕐 Dernière alerte : <strong style="color:var(--text)">{{ p.derniere_alerte[:16] }}</strong></span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="ac-days">
+        {{ p.jours_ecoules }}
+        <span>jours de retard</span>
+      </div>
+      <a href="{{ url_for('modifier_projet', pid=p.id) }}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="card" style="text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <div style="font-size:16px;color:var(--success);font-weight:700">
+        Aucun projet hors délais !
+      </div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:8px">
+        Tous les projets sont dans les délais impartis.
+      </div>
+    </div>
+  {% endif %}
+</main>
+{% endblock %}
