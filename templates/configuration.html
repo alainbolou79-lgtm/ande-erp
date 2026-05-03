@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Configuration{% endblock %}
+{% block content %}
+<main>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1000px">
+
+    <!-- Config SMTP -->
+    <div class="card">
+      <div class="card-title">⚙️ CONFIGURATION SMTP</div>
+      <form method="post">
+        <div class="form-group">
+          <label>Email destinataire des alertes</label>
+          <input type="email" name="alert_email" value="{{ cfg.get('alert_email','alainbolou@yahoo.fr') }}">
+        </div>
+        <div class="form-group">
+          <label>Seuil d'alerte (jours)</label>
+          <input type="number" name="alert_days" value="{{ cfg.get('alert_days','15') }}" min="1" max="365">
+        </div>
+        <div class="form-group">
+          <label>Serveur SMTP</label>
+          <input type="text" name="smtp_host" value="{{ cfg.get('smtp_host','smtp.gmail.com') }}">
+        </div>
+        <div class="form-group">
+          <label>Port SMTP</label>
+          <input type="number" name="smtp_port" value="{{ cfg.get('smtp_port','587') }}">
+        </div>
+        <div class="form-group">
+          <label>Email expéditeur (login Gmail)</label>
+          <input type="email" name="smtp_user" value="{{ cfg.get('smtp_user','') }}" placeholder="votre@gmail.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe / App Password</label>
+          <input type="password" name="smtp_pass" value="{{ cfg.get('smtp_pass','') }}" placeholder="••••••••••••••••">
+        </div>
+        <div class="form-group">
+          <label>Intervalle de vérification (minutes)</label>
+          <input type="number" name="auto_check_interval" value="{{ cfg.get('auto_check_interval','60') }}" min="10">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button type="submit" class="btn btn-primary">💾 Sauvegarder</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Aide + Test -->
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🧪 TESTER L'ENVOI EMAIL</div>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px">
+          Envoie un email de test à {{ cfg.get('alert_email','alainbolou@yahoo.fr') }} pour vérifier la configuration.
+        </p>
+        <form method="post" action="{{ url_for('tester_email') }}">
+          <button type="submit" class="btn btn-orange">📧 Envoyer un email de test</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 AIDE – GMAIL APP PASSWORD</div>
+        <div style="font-size:13px;color:var(--text-dim);line-height:1.8">
+          <p style="margin-bottom:8px">Pour Gmail, vous devez créer un <strong style="color:var(--text)">App Password</strong> :</p>
+          <ol style="padding-left:18px">
+            <li>Allez sur <strong style="color:var(--accent)">myaccount.google.com/apppasswords</strong></li>
+            <li>Connectez-vous avec votre compte Gmail</li>
+            <li>Tapez un nom : <em>ANDE ERP</em></li>
+            <li>Cliquez <strong>Créer</strong></li>
+            <li>Copiez le code 16 caractères</li>
+            <li>Collez-le dans le champ <strong>Mot de passe</strong> ci-contre</li>
+          </ol>
+          <div style="margin-top:14px;padding:10px;background:var(--panel);border-radius:8px;border-left:3px solid var(--accent)">
+            <strong style="color:var(--accent)">Yahoo :</strong> smtp.mail.yahoo.com port 587<br>
+            <strong style="color:var(--accent)">Gmail :</strong> smtp.gmail.com port 587
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

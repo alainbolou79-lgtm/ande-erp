@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Importer{% endblock %}
+{% block content %}
+<main>
+  <div class="card" style="max-width:800px;margin:0 auto">
+    <div class="card-title">📥 IMPORTER UNE BASE DE DONNÉES EXISTANTE</div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px">
+      Importez vos projets depuis un fichier Excel (.xlsx) ou CSV (.csv).
+      Les colonnes sont détectées automatiquement.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" id="importForm">
+
+      <!-- Étape 1 : Fichier -->
+      <div style="background:var(--panel);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase">
+          Étape 1 – Choisir le fichier
+        </div>
+        <div class="form-group" style="margin:0">
+          <input type="file" name="fichier" id="fichierInput"
+                 accept=".xlsx,.xls,.csv" required
+                 style="color:var(--text);cursor:pointer"
+                 onchange="previewFile(this)">
+        </div>
+      </div>
+
+      <!-- Étape 2 : Colonnes (affichées après upload) -->
+      <div id="colonnesSection" style="display:none;background:var(--panel);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:14px;text-transform:uppercase">
+          Étape 2 – Associer les colonnes
+        </div>
+        <div class="form-group">
+          <label>PROMOTEUR *</label>
+          <select name="col_promoteur" id="sel_promoteur">
+            <option value="">(sélectionner)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>INTITULÉ DU PROJET *</label>
+          <select name="col_intitule" id="sel_intitule">
+            <option value="">(sélectionner)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>DATE DE PASSAGE (optionnel)</label>
+          <select name="col_date_passage" id="sel_date">
+            <option value="">(ignorer)</option>
+          </select>
+        </div>
+
+        <!-- Aperçu -->
+        <div style="margin-top:16px">
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:700">
+            APERÇU DES DONNÉES
+          </div>
+          <div class="table-wrap" id="apercu"></div>
+        </div>
+      </div>
+
+      <!-- Étape 3 : Options -->
+      <div id="optionsSection" style="display:none;background:var(--panel);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;text-transform:uppercase">
+          Étape 3 – Options
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+          <input type="radio" name="mode" value="ajouter" checked>
+          <span style="font-size:13px">➕ Ajouter à la base existante <strong>(recommandé)</strong></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <input type="radio" name="mode" value="remplacer">
+          <span style="font-size:13px;color:var(--danger)">⚠️ Remplacer toute la base (supprime les données actuelles)</span>
+        </label>
+      </div>
+
+      <div id="btnSection" style="display:none">
+        <button type="submit" class="btn btn-primary">🚀 Lancer l'importation</button>
+        <a href="{{ url_for('projets') }}" class="btn btn-dim" style="margin-left:10px">Annuler</a>
+      </div>
+    </form>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script>
+async function previewFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append("fichier", file);
+  const res  = await fetch("{{ url_for('preview_fichier') }}", {method:"POST", body:fd});
+  const data = await res.json();
+  if (data.error) { alert("Erreur: " + data.error); return; }
+
+  // Remplir les selects
+  const cols = data.colonnes;
+  ["sel_promoteur","sel_intitule","sel_date"].forEach((id,i) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = i===2 ? '<option value="">(ignorer)</option>' : '<option value="">(sélectionner)</option>';
+    cols.forEach(c => {
+      const opt = new Option(c, c);
+      sel.appendChild(opt);
+    });
+    // Auto-détection
+    cols.forEach(c => {
+      const cl = c.toLowerCase();
+      if (id==="sel_promoteur" && /promoteur|promo|porteur|nom/.test(cl)) sel.value = c;
+      if (id==="sel_intitule"  && /intitul|projet|description|objet|titre/.test(cl)) sel.value = c;
+      if (id==="sel_date"      && /date|passage/.test(cl)) sel.value = c;
+    });
+  });
+
+  // Afficher aperçu
+  let html = "<table><thead><tr>";
+  cols.forEach(c => html += `<th>${c}</th>`);
+  html += "</tr></thead><tbody>";
+  data.apercu.forEach(row => {
+    html += "<tr>";
+    row.forEach(cell => html += `<td>${cell}</td>`);
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  document.getElementById("apercu").innerHTML = html;
+
+  document.getElementById("colonnesSection").style.display = "block";
+  document.getElementById("optionsSection").style.display  = "block";
+  document.getElementById("btnSection").style.display      = "block";
+}
+</script>
+{% endblock %}

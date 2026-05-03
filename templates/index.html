@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="val" style="color:var(--text)">{{ stats.total }}</div>
+    <div class="lbl">📋 Total projets</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" style="color:var(--danger)">{{ stats.alertes }}</div>
+    <div class="lbl">🔴 Alertes</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" style="color:var(--warning)">{{ stats.attention }}</div>
+    <div class="lbl">🟡 Attention</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" style="color:var(--success)">{{ stats.ok }}</div>
+    <div class="lbl">🟢 OK</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" style="color:var(--text-dim)">{{ stats.sans_date }}</div>
+    <div class="lbl">⬜ Sans date</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" style="color:var(--accent)">{{ stats.total_alertes_envoyees }}</div>
+    <div class="lbl">📧 Emails envoyés</div>
+  </div>
+</div>
+
+<main>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px">
+
+    <!-- Alertes urgentes -->
+    <div class="card">
+      <div class="card-title">⚠️ Projets hors délais (Top 5)</div>
+      {% if alertes %}
+        {% for p in alertes %}
+        <div class="alert-card">
+          <div>
+            <div class="ac-title">{{ p.promoteur }}</div>
+            <div class="ac-sub">{{ p.intitule[:70] }}{% if p.intitule|length > 70 %}...{% endif %}</div>
+            <div class="ac-sub" style="margin-top:6px">
+              📅 {{ p.date_passage or '—' }}
+            </div>
+          </div>
+          <div class="ac-days">
+            {{ p.jours_ecoules }}
+            <span>jours</span>
+          </div>
+        </div>
+        {% endfor %}
+        <a href="{{ url_for('alertes') }}" class="btn btn-orange" style="margin-top:8px">
+          Voir toutes les alertes →
+        </a>
+      {% else %}
+        <p style="color:var(--success); font-size:14px; padding:20px 0">
+          ✅ Aucun projet hors délais. Tout est à jour !
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="card">
+      <div class="card-title">⚡ Actions rapides</div>
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <a href="{{ url_for('nouveau_projet') }}" class="btn btn-primary">
+          ➕ Nouveau projet
+        </a>
+        <a href="{{ url_for('alertes') }}" class="btn btn-orange">
+          📧 Gérer les alertes
+        </a>
+        <a href="{{ url_for('importer') }}" class="btn btn-dim">
+          📥 Importer un fichier Excel
+        </a>
+        <a href="{{ url_for('historique') }}" class="btn btn-dim">
+          📜 Voir l'historique des emails
+        </a>
+        <a href="{{ url_for('configuration') }}" class="btn btn-dim">
+          ⚙️ Configuration SMTP
+        </a>
+      </div>
+
+      <!-- Indicateur scheduler -->
+      <div style="margin-top:20px; padding:14px; background:var(--panel);
+                  border-radius:8px; border:1px solid var(--border)">
+        <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px">
+          SCHEDULER AUTOMATIQUE
+        </div>
+        <div style="font-size:13px; color:var(--success)">
+          🟢 Actif – Vérification toutes les 60 minutes
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:4px">
+          + Vérification quotidienne à 08:00
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résumé code couleur -->
+  <div class="card">
+    <div class="card-title">📊 Code couleur des statuts</div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge badge-alerte">🔴 ALERTE</span>
+        <span style="font-size:13px;color:var(--text-dim)">Plus de 15 jours – Email automatique envoyé</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge badge-warning">🟡 ATTENTION</span>
+        <span style="font-size:13px;color:var(--text-dim)">Entre 10 et 15 jours – Surveiller</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge badge-ok">🟢 OK</span>
+        <span style="font-size:13px;color:var(--text-dim)">Moins de 10 jours – Dans les délais</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge badge-nodate">⬜ SANS DATE</span>
+        <span style="font-size:13px;color:var(--text-dim)">Aucune date de passage renseignée</span>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
