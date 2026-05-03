@@ -1,3 +1,4 @@
+
 """
 ANDE – Agence Nationale De l'Environnement
 Service Promoteur et Relations Extérieures
@@ -8,6 +9,7 @@ import database as db
 import email_service as es
 import threading, os, json
 from datetime import datetime
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ande-erp-secret-2024")
